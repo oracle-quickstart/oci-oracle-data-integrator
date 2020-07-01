@@ -1,0 +1,346 @@
+title: Oracle ODI Stack Variables
+description: Input variables for the Oracle ODI stack template
+schemaVersion: 1.1.0
+version: "20190304"
+locale: "en"
+
+groupings:
+
+- title: "General Settings"
+  variables:
+  - ${quick_create}
+  - ${odi_repo}
+  - ${service_name}
+  - ${compartment_ocid}
+
+- title: "Network Configuration"
+  visible: ${quick_create}
+  variables:
+  - ${vcn_cidr}
+  - ${create_public_subnet}
+  - ${vcnCompartment}  
+  - ${vcn}  
+  - ${subnetCompartment}  
+  - ${subnet}
+  - ${assign_public_ip}
+
+- title: "ODI Instance Settings"
+  variables:
+  - ${mp_listing_resource_id}
+  - ${instance_shape}
+  - ${ssh_public_key}
+  - ${instance_availability_domain}
+  - ${odi_vnc_password}
+  
+- title: "New ODI Metadata Repository"
+  visible:
+       eq:
+        - ${odi_repo}
+        - Create a new ODI Repository in an Autonomous Database
+  variables:  
+    - ${new_adw_instance}
+    - ${new_adw_name}    
+    - ${new_adw_username}
+    - ${new_adw_password}
+    - ${new_odi_password}
+    - ${new_odi_schema_prefix}
+    - ${new_odi_schema_password}
+
+- title: "Existing ODI Metadata Repository"
+  visible:
+       eq:
+        - ${odi_repo}
+        - Connect to an existing ODI Repository in an Autonomous Database
+  variables:
+    - ${adw_instance}
+    - ${adw_name}    
+    - ${adw_username}
+    - ${adw_password}
+    - ${odi_password}
+    - ${odi_schema_prefix}
+    - ${odi_schema_password}  
+
+variables:
+  # General Configuration
+    
+  tenancy_ocid:
+    title: Tenancy ID
+    description: The Oracle Cloud Identifier (OCID) for your tenancy
+    type: string
+    required: true
+    visible: false
+
+  region:
+    title: Region
+    description: The region in which to create all resources
+    type: oci:identity:region:name
+    required: true
+    visible: false
+
+  service_name:
+    title: Resource Display Name Prefix
+    description: Display name prefix for all generated compute and network resources.  If not specified, this will be automatically generated.
+    type: string
+    required: false
+
+  compartment_ocid:
+    title: Target Compartment
+    description: The target compartment for all of the provisioned resources
+    type: oci:identity:compartment:id
+    required: true
+
+  
+  quick_create:
+    title: Networking Options
+    description: The ODI Instance can be created inside a new VCN and Subnet, that will be provisioned and configured for you, or  it can be created inside an existing network.
+    visible: true
+    type: enum
+    enum:
+     - New networking components will be created
+     - Existing networking components will be used
+    default: Create Network Resources
+    required: true
+
+  # ODI instance configuration
+  instance_shape:
+    title: ODI Node Shape
+    description: The shape for all ODI compute instances
+    type: oci:core:instanceshape:name
+    default: VM.Standard2.4
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      imageId: ${mp_listing_resource_id}
+
+  instance_availability_domain:
+    title: ODI Availability Domain
+    description: The name of the availability domain in which to create the ODI compute instances
+    type: oci:identity:availabilitydomain:name
+    required: true
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+
+  ssh_public_key:
+    title: SSH Public Key
+    description: SSH keys are needed to ssh to the ODI vm instance. It can be generated using puttygen. Use the corresponding private key to access the ODI compute instances
+    type: string
+    required: true
+
+  odi_vnc_password:
+    title: ODI VNC Password
+    description: "The VNC password for the ODI instance"
+    type: password
+    minLength: 8
+    maxLength: 30
+    required: true
+
+    
+  # Create Network options
+  vcn_cidr:
+    title: Virtual Network CIDR
+    description: The CIDR to assign to the new virtual cloud network (VCN) to create for this service.
+    type: string
+    default: 10.0.0.0/16
+    dependsOn:
+       compartmentId: ${subnetCompartment}
+       vcnId: ${vcn}  
+       subnetId: ${subnet}
+    visible:
+       eq:
+        - ${quick_create}
+        - New networking components will be created
+        
+  create_public_subnet:
+    title: Create a public ODI subnet
+    description: Creates all the ODI resources in a public subnet.  Uncheck to create the resources in a private subnet
+    type: boolean
+    default: true
+    visible:
+       eq:
+        - ${quick_create}
+        - New networking components will be created
+                
+  vcnCompartment:
+    type: oci:identity:compartment:id
+    title: VCN Compartment    
+    visible: 
+       eq:
+        - ${quick_create}
+        - Existing networking components will be used   
+    required: true
+ 
+  vcn:
+    type: oci:core:vcn:id
+    title: VCN   
+    visible: 
+       eq:
+        - ${quick_create}
+        - Existing networking components will be used    
+    dependsOn:
+      compartmentId: ${vcnCompartment}
+    required: true
+         
+  subnetCompartment:
+    type: oci:identity:compartment:id
+    title: Subnet Compartment    
+    visible: 
+       eq:
+        - ${quick_create}
+        - Existing networking components will be used   
+    required: true
+ 
+ 
+  subnet:
+    type: oci:core:subnet:id
+    title: Subnet   
+    visible: 
+       eq:
+        - ${quick_create}
+        - Existing networking components will be used  
+    dependsOn:
+       compartmentId: ${subnetCompartment}
+       vcnId: ${vcn}
+  
+     
+  assign_public_ip :
+    title: Assign public ip address
+    description: Assign a public ip address
+    type: boolean
+    default: false
+    visible:
+       eq:
+        - ${quick_create}
+        - Existing networking components will be used
+      
+  # ADW settings   
+  odi_repo:
+    title: ODI Repository Location
+    description: The ODI repository can either be located in an Autonomous Database in this Tenancy, or in an embedded database in the ODI Instance.
+    type: enum
+    enum:
+     - Create a new ODI Repository in an Autonomous Database
+     - Connect to an existing ODI Repository in an Autonomous Database
+     - Create an embedded ODI Repository
+    default: Create a new ODI Repository in an Autonomous Database
+    required: true    
+  
+  new_adw_instance:
+      title: Autonomous Database Instance
+      description: Choose an Autonomous Database Instance
+      required: true
+      type: oci:database:autonomousdatabase:id
+      dependsOn:
+        compartmentId: ${compartment_ocid}  
+      
+  new_adw_password:
+    title: Autonomous Database Admin Password
+    description: Provide Autonomous Database Instance admin password
+    type: password
+    minLength: 8
+    maxLength: 30
+    required: true
+      
+  new_odi_password:
+    title: Supervisor Password
+    description: Provide a new password for the ODI Supervisor User. (Alphanumeric and cannot start with a number)
+    type: password
+    minLength: 6
+    maxLength: 12
+    pattern: ^[A-Za-z][A-Za-z0-9_#\$]+$    
+    required: true
+    
+  new_odi_schema_prefix: 
+      title: Schema Prefix
+      description: Provide a prefix to be used for naming new ODI Schemas in the database (Alphanumeric)
+      type: string  
+      minLength: 1
+      maxLength: 12
+      pattern: ^[A-Za-z][A-Za-z0-9]+$      
+      required: true    
+      
+
+  new_odi_schema_password:
+    title: Schema Password
+    description: Provide a new password for the new ODI Schemas (Alphanumeric, cannot start with a number and only _,#,$ special characters allowed)
+    type: password
+    minLength: 12
+    maxLength: 30
+    pattern: ^[A-Za-z][A-Za-z0-9_#\$]+$        
+    required: true
+    
+  adw_instance:
+      title: Autonomous Database Instance
+      description: Choose an Autonomous Database Instance
+      required: true
+      type: oci:database:autonomousdatabase:id
+      dependsOn:
+        compartmentId: ${compartment_ocid} 
+      
+  adw_password:
+    title: Autonomous Database Admin Password
+    description: Provide Autonomous Database Instance admin password 
+    type: password
+    minLength: 8
+    maxLength: 30
+    required: true
+      
+  odi_password:
+    title: Supervisor Password
+    description: Provide a new password for the ODI Supervisor User (Alphanumeric and cannot start with a number)
+    type: password
+    minLength: 6
+    maxLength: 12
+    pattern: ^[A-Za-z][A-Za-z0-9_#\$]+$    
+    required: true
+    
+  odi_schema_prefix: 
+      title: Schema Prefix
+      description: Provide the Prefix that was used to create the ODI Schema (Alphanumeric)
+      type: string  
+      minLength: 1
+      maxLength: 12
+      pattern: ^[A-Za-z][A-Za-z0-9]+$
+      required: true    
+
+  odi_schema_password:
+    title: Schema Password
+    description: Provide the password for the ODI Schemas. (Alphanumeric, cannot start with a number and only _,#,$ special characters allowed)
+    type: password
+    minLength: 12
+    maxLength: 30
+    pattern: ^[A-Za-z][A-Za-z0-9_#\$]+$    
+    required: true
+    
+    
+  # Development time settings
+  use_marketplace_image:
+    title: Use Marketplace Image
+    type: boolean
+    visible: false
+
+  mp_listing_id:
+    type: string
+    visible: false
+
+  mp_listing_resource_version:
+    type: string
+    visible: false
+
+  mp_listing_resource_id:
+    title: Instance Image OCID
+    type: oci:core:image:id
+    visible: false
+
+
+outputs:
+  ODI_node_id:
+    title: ODI Node Instance OCID
+    type: ocid
+  bastion_host_id:
+    title: Bastion Host Instance OCID
+    type: ocid
+  bastion_host_public_ip:
+    title: Bastion Host Public IP
+    type: string  
+
+primaryOutputButton: ${ODI_url}
+
