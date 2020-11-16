@@ -3,7 +3,7 @@
  */
 
 data "template_cloudinit_config" "bastion-config" {
-  count = var.enabled ? 1 : 0
+  count = var.enabled != 0 ? 1 : 0
 
   gzip          = true
   base64_encode = true
@@ -19,7 +19,7 @@ data "template_cloudinit_config" "bastion-config" {
 }
 
 resource "oci_core_instance" "bastion-instance" {
-  count = var.enabled ? 1 : 0
+  count = var.enabled != 0 ? 1 : 0
 
   //assumption: it is the same ad as essbase
   availability_domain = var.availability_domain

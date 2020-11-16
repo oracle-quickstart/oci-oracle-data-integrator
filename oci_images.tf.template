@@ -1,0 +1,12 @@
+variable "marketplace_source_images" {  
+   type = map(object({ 
+     ocid = string  
+     is_pricing_associated = bool  
+     compatible_shapes = set(string)  }))  
+   default = {    
+     main_mktpl_image = {     
+       ocid = "<image_id>"      
+       is_pricing_associated = true      
+       compatible_shapes = []    
+     }} 
+}

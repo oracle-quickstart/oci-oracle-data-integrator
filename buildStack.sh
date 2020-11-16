@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-# $Header: odi/src/javadev/odi.release/packaging/odi-oci-stack/buildStack.sh /main/1 2020/05/26 08:15:23 sjayaram Exp $
+# $Header: odi/src/javadev/odi.release/packaging/odi-oci-stack/buildStack.sh /main/4 2020/11/08 22:16:41 sjayaram Exp $
 #
 # buildStack.sh
 #
-# Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2020, Oracle and/or its affiliates. 
 #
 #    NAME
 #      buildStack.sh - <one-line expansion of the name>
@@ -26,4 +26,16 @@
 
 
 sed "s/<studio_mode>/$1/g" ./main.tf.template >  main.tf
-zip -r odi_stack_$1.zip ./*  -x ./buildStack.sh ./main.tf.template ./*.zip 
+cat outputs.tf.template > outputs.tf
+if [ $1 == "BASIC" ]
+then
+ echo 'output "public_web_studio_url" {
+    value = "http://${module.odi.node_public_ip}:9999/odi-web-studio"
+}' >> outputs.tf
+ echo '' >> outputs.tf
+ echo 'output "private_web_studio_url" {
+    value = "http://${module.odi.node_private_ip}:9999/odi-web-studio"
+}' >> outputs.tf
+fi
+
+zip -r odi_stack_$1.zip ./*  -x "./buildStack.sh" "./*.template" "./*.zip" "*/.*" 

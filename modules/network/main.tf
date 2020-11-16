@@ -18,7 +18,7 @@ locals {
 
 # ------------------------------------
 resource "oci_core_vcn" "vcn" {
-  count          = var.network_enabled ? 1 : 0
+  count          = var.network_enabled != 0 ? 1 : 0
   cidr_block     = var.vcn_cidr
   compartment_id = var.compartment_id
   display_name   = "${var.display_name_prefix}-vcn"
@@ -26,7 +26,7 @@ resource "oci_core_vcn" "vcn" {
 }
 
 resource "oci_core_internet_gateway" "internet_gateway" {
-  count          = var.network_enabled ? 1 : 0
+  count          = var.network_enabled != 0 ? 1 : 0
   compartment_id = var.compartment_id
   display_name   = "${var.display_name_prefix}-gateway"
   vcn_id         = oci_core_vcn.vcn[0].id
@@ -41,7 +41,7 @@ data "oci_core_services" "test_services" {
 }
 
 resource "oci_core_service_gateway" "service_gateway" {
-  count          = var.network_enabled ? 1 : 0
+  count          = var.network_enabled != 0 ? 1 : 0
   compartment_id = var.compartment_id
   display_name   = "${var.display_name_prefix}-service-gateway"
   vcn_id         = oci_core_vcn.vcn[0].id
@@ -52,7 +52,7 @@ resource "oci_core_service_gateway" "service_gateway" {
 }
 
 resource "oci_core_nat_gateway" "nat_gateway" {
-  count          = var.create_private_subnet && var.network_enabled ? 1 : 0
+  count          = var.create_private_subnet != 0 && var.network_enabled != 0 ? 1 : 0
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vcn[0].id
   display_name   = "${var.display_name_prefix}-nat-gateway"
@@ -60,7 +60,7 @@ resource "oci_core_nat_gateway" "nat_gateway" {
 
 # Bastion
 resource "oci_core_security_list" "bastion" {
-  count          = var.create_private_subnet && var.network_enabled ? 1 : 0
+  count          = var.create_private_subnet != 0 && var.network_enabled != 0 ? 1 : 0
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vcn[0].id
   display_name   = "${var.display_name_prefix}-bastion-security-list"
@@ -97,7 +97,7 @@ resource "oci_core_security_list" "bastion" {
 }
 
 resource "oci_core_subnet" "bastion" {
-  count = var.create_private_subnet && var.network_enabled ? 1 : 0
+  count = var.create_private_subnet != 0 && var.network_enabled != 0 ? 1 : 0
 
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vcn[0].id
@@ -114,7 +114,7 @@ resource "oci_core_subnet" "bastion" {
 }
 
 resource "oci_core_route_table" "bastion" {
-  count          = var.create_private_subnet && var.network_enabled ? 1 : 0
+  count          = var.create_private_subnet != 0 && var.network_enabled != 0 ? 1 : 0
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vcn[0].id
   display_name   = "${var.display_name_prefix}-bastion-route-table"
@@ -127,14 +127,14 @@ resource "oci_core_route_table" "bastion" {
 }
 
 resource "oci_core_route_table_attachment" "bastion" {
-  count          = var.create_private_subnet && var.network_enabled ? 1 : 0
+  count          = var.create_private_subnet != 0 && var.network_enabled != 0 ? 1 : 0
   subnet_id      = oci_core_subnet.bastion[0].id
   route_table_id = oci_core_route_table.bastion[0].id
 }
 
 # Application
 resource "oci_core_security_list" "application" {
-  count          = var.network_enabled ? 1 : 0
+  count          = var.network_enabled != 0 ? 1 : 0
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vcn[0].id
   display_name   = "${var.display_name_prefix}-app-security-list"
@@ -193,7 +193,7 @@ resource "oci_core_security_list" "application" {
 }
 
 resource "oci_core_subnet" "application" {
-  count          = var.network_enabled ? 1 : 0
+  count          = var.network_enabled != 0 ? 1 : 0
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vcn[0].id
   display_name   = "${var.display_name_prefix}-app-subnet"
@@ -211,7 +211,7 @@ resource "oci_core_subnet" "application" {
 }
 
 resource "oci_core_route_table" "application-public" {
-  count          = var.create_private_subnet != 1 && var.network_enabled ? 1 : 0
+  count          = var.create_private_subnet != 1 && var.network_enabled != 0 ? 1 : 0
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vcn[0].id
   display_name   = "${var.display_name_prefix}-app-route-table"
@@ -224,13 +224,13 @@ resource "oci_core_route_table" "application-public" {
 }
 
 resource "oci_core_route_table_attachment" "application-public" {
-  count          = var.create_private_subnet != 1 && var.network_enabled ? 1 : 0
+  count          = var.create_private_subnet != 1 && var.network_enabled != 0 ? 1 : 0
   subnet_id      = oci_core_subnet.application[0].id
   route_table_id = oci_core_route_table.application-public[0].id
 }
 
 resource "oci_core_route_table" "application-private" {
-  count          = var.create_private_subnet && var.network_enabled ? 1 : 0
+  count          = var.create_private_subnet != 0 && var.network_enabled != 0 ? 1 : 0
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vcn[0].id
   display_name   = "${var.display_name_prefix}-app-route-table"
@@ -243,7 +243,7 @@ resource "oci_core_route_table" "application-private" {
 }
 
 resource "oci_core_route_table_attachment" "application-private" {
-  count          = var.create_private_subnet && var.network_enabled ? 1 : 0
+  count          = var.create_private_subnet != 0 && var.network_enabled != 0 ? 1 : 0
   subnet_id      = oci_core_subnet.application[0].id
   route_table_id = oci_core_route_table.application-private[0].id
 }

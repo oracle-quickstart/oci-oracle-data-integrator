@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019, 2020, Oracle and/or its affiliates. 
+* Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 
 // Random suffix to make things unique
@@ -35,16 +35,16 @@ module "network" {
   
   dns_label = "${local.generated_dns_label}"
   
-  create_private_subnet = "${var.create_public_subnet ? false : true}"
+  create_private_subnet = "${var.create_public_subnet ? 0 : 1}"
   
-  network_enabled = "${var.quick_create != "Existing networking components will be used" ? true : false}"
+  network_enabled = "${var.quick_create != "Existing networking components will be used" ? 1 : 0}"
 }
 
 
 module "bastion" {
   source = "./modules/bastion"
 
-  enabled = "${var.create_public_subnet ? false : true}"
+  enabled = "${var.create_public_subnet ? 0 : 1}"
 
   compartment_id      = "${var.compartment_ocid}"
   
@@ -85,7 +85,7 @@ module "odi" {
   node_hostname_prefix = "oracle-odi-inst"
   shape                = "${var.instance_shape}"
   subnet_id            = "${var.quick_create != "Existing networking components will be used" ? module.network.application_subnet_id : var.subnet}"
-  assign_public_ip     = "${var.quick_create != "Existing networking components will be used" ? var.create_public_subnet ? true : false : var.assign_public_ip ? true : false}"  
+  assign_public_ip     = "${var.quick_create != "Existing networking components will be used" ? var.create_public_subnet ? 1 : 0 : var.assign_public_ip ? 1 : 0}"  
   odi_vnc_password     = "${var.odi_vnc_password}"
   adw_instance         = "${var.odi_repo != "Connect to an existing ODI Repository in an Autonomous Database" ? var.new_adw_instance : var.adw_instance}"
   adw_password         = "${var.odi_repo != "Connect to an existing ODI Repository in an Autonomous Database" ? var.new_adw_password : var.adw_password}"

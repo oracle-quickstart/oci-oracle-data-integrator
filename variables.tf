@@ -21,6 +21,7 @@ variable "service_name" {
 
 variable "quick_create" {
   description = "ODI instance should be created in a new network or an existing network. Options : New networking components will be created,  Existing networking components will be used"
+  default = ""
 }
 
 variable "use_marketplace_image" {
@@ -36,7 +37,7 @@ variable "mp_listing_resource_version" {
 }
 
 variable "mp_listing_resource_id" {
-  default = "ocid1.image.oc1..aaaaaaaau7pex35x64qfm4jb2bohmp24mmz3nb52jmbo7hxrujfhccypce3a"
+  default = "ocid1.image.oc1.phx.aaaaaaaa2bbb5smufjxx5xuwjo4txzb62ccsq5aqmilxoc7b7ttjjh7efm2a"
 }
 
 variable "instance_shape" {
@@ -91,41 +92,51 @@ variable "odi_repo" {
 
 variable "adw_instance" {
   description = "ADW instance ID"
+  default = ""
 }
 
 variable "adw_password" {
   description = "ADW password"
+  default = ""
 }
 
 variable "odi_password" {
   description = "ODI password"
+  default = ""
 }
 
 variable "odi_schema_prefix" {
   description = "ADW schema prefix"
+  default = ""
 }
 
 variable "odi_schema_password" {
   description = "ADW schema password"
+  default = ""
 }
 
 variable "new_adw_instance" {
   description = "ADW instance ID"
+  default = ""
 }
 
 variable "new_adw_password" {
   description = "ADW password"
+  default = ""
 }
 
 variable "new_odi_password" {
   description = "ODI password"
+  default = ""
 }
 
 variable "new_odi_schema_prefix" {
   description = "ADW schema prefix"
+  default = ""
 }
 
 variable "new_odi_schema_password" {
   description = "ADW schema password"
+  default = ""
 }
 

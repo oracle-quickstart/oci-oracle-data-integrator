@@ -11,9 +11,6 @@ runcmd:
   - sudo systemctl enable agentodi.service
   - sudo systemctl enable manageappsodi.service   
   - sudo systemctl start oraclevncodi.service
-  - sudo systemctl start mysqlodi.service
-  - sudo systemctl start agentodi.service
-  - sudo systemctl start manageappsodi.service  
   - sudo chmod +rwx /usr/share/applications/odi.desktop
   - sudo sed -i "s/ODI Studio/${studio_name}/g" /usr/share/applications/odi.desktop 
   - sudo cp /usr/share/applications/odi.desktop /home/opc/Desktop
@@ -25,12 +22,16 @@ runcmd:
   - sudo cp /home/opc/.ssh/authorized_keys /home/oracle/.ssh/authorized_keys
   - sudo chown oracle:oracle /home/oracle/.ssh/authorized_keys
   - mkdir -p /u01/oracle/mwh/app_logs
+  - mkdir -p /u01/oracle/mwh/odi/log
   - chown oracle:oracle /u01/oracle/mwh/app_logs
+  - chown oracle:oracle /u01/oracle/mwh/odi/log
   - chmod +rwx /u01/oracle/mwh/app_logs
+  - chown oracle:oracle /u01/oracle/mwh/odi/log
   
   # Create the adw properties file
-  
-  - echo "mp_stack_mode=${studio_mode}" > /u01/oracle/odi-setup.properties   
+ 
+  - echo "[config]" > /u01/oracle/odi-setup.properties 
+  - echo "mp_stack_mode=${studio_mode}" >> /u01/oracle/odi-setup.properties   
   - echo "dbTech=${db_tech}" >> /u01/oracle/odi-setup.properties 
   - echo "adwInstanceOcId=${adw_instance}" >> /u01/oracle/odi-setup.properties
   - echo "adwInstancePassword="'${adw_password}' >> /u01/oracle/odi-setup.properties
@@ -86,9 +87,12 @@ runcmd:
   - echo "JAVA_HOME=/u01/oracle/jdk1.8.0_191" > /u01/oracle/mwh/oui/.globalEnv.properties
   - echo "JAVA_HOME_1_8=/u01/oracle/jdk1.8.0_191" >> /u01/oracle/mwh/oui/.globalEnv.properties
   - export ORACLE_HOME=/u01/oracle/mwh  
-  - chown -R oracle:oracle /u01/oracle/mwh/inventory_odi
+  - chown -R oracle:oracle /u01/oracle/inventory_odi
   - sudo su
   - su oracle -c "export MW_HOME=/u01/oracle/mwh; export APP_LOGS=/u01/oracle/mwh/app_logs; export JAVA_HOME=/u01/oracle/jdk1.8.0_191; export PATH=/u01/oracle/jdk1.8.0_191/bin:$PATH; ./configureRepo.sh" > /u01/oracle/logs/odiConfigure.log      
+  - sudo systemctl start mysqlodi.service
+  - sudo systemctl start agentodi.service
+  - sudo systemctl start manageappsodi.service  
  
 final_message: "The system is finally up, after $UPTIME seconds"
   
