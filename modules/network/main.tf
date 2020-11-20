@@ -211,7 +211,7 @@ resource "oci_core_subnet" "application" {
 }
 
 resource "oci_core_route_table" "application-public" {
-  count          = var.create_private_subnet != 1 && var.network_enabled != 0 ? 1 : 0
+  count          = var.create_private_subnet == false && var.network_enabled ? 1 : 0
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vcn[0].id
   display_name   = "${var.display_name_prefix}-app-public-route-table"
@@ -224,13 +224,13 @@ resource "oci_core_route_table" "application-public" {
 }
 
 resource "oci_core_route_table_attachment" "application-public" {
-  count          = var.create_private_subnet != 1 && var.network_enabled != 0 ? 1 : 0
+  count          = var.create_private_subnet == false && var.network_enabled ? 1 : 0
   subnet_id      = oci_core_subnet.application[0].id
   route_table_id = oci_core_route_table.application-public[0].id
 }
 
 resource "oci_core_route_table" "application-private" {
-  count          = var.create_private_subnet != 0 && var.network_enabled != 0 ? 1 : 0
+  count          = var.create_private_subnet && var.network_enabled ? 1 : 0
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vcn[0].id
   display_name   = "${var.display_name_prefix}-app-private-route-table"
@@ -243,7 +243,7 @@ resource "oci_core_route_table" "application-private" {
 }
 
 resource "oci_core_route_table_attachment" "application-private" {
-  count          = var.create_private_subnet != 0 && var.network_enabled != 0 ? 1 : 0
+  count          = var.create_private_subnet && var.network_enabled  ? 1 : 0
   subnet_id      = oci_core_subnet.application[0].id
   route_table_id = oci_core_route_table.application-private[0].id
 }
